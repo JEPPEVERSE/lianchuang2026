@@ -1,10 +1,62 @@
 # Agent Tool Gateway
 
-一个用于校验、授权和执行 Agent 工具调用的安全网关，对应任务书“先别执行！——Agent 工具调用安全网关”。
+基于我已有的 `Personal_AI` 项目中的 `PolicyLayer`，适配并扩展出的 Agent 工具调用安全网关，
+对应任务书“先别执行！——Agent 工具调用安全网关”。
 固定 JSON 模拟 Agent；命令行 Client 与 HTTP Gateway 分开运行。无需真实大模型、MCP 或邮件服务。
 
 已完成 Basic（Level 1）与确认安全进阶（Level 2）。[Level 2 验收与演示](docs/level2.md)
 说明参数绑定、并发确认、过期、多用户和审计行为。
+
+## 原项目的影响与个人贡献
+
+我在阅读题目时，注意到它与已有 `Personal_AI` 项目的权限层思路相近，
+因此提出复用原项目的代码与分层结构，再围绕题目完成工具调用与用户确认流程。
+原项目是本次实现的架构和策略代码基础。
+
+### 从个人数据访问控制到工具执行控制
+
+`Personal_AI` 将 Agent、权限判断与个人数据资源分开：Agent 提出访问请求，
+`PolicyLayer` 判断是否允许，`DataVault` 提供实际数据。
+这为本项目提供了“请求提出者不能自行决定权限”的分层思路：
+
+```text
+原项目：Application / Agent → PolicyLayer → DataVault
+本项目：Agent → Client → Gateway（校验、策略、确认、审计）→ Tools
+```
+
+本次保留独立策略层，将受保护的对象从个人数据记录扩展为工具操作。
+原项目关注“某个 Agent 能读取哪些字段、用于什么目的、发送到哪里”；
+本项目进一步处理“这个工具能否执行、是否需要用户确认、确认能否被重复使用”。
+
+| 原项目提供的基础 | 对本项目的具体影响 | 当前代码位置 |
+| --- | --- | --- |
+| 默认拒绝、显式拒绝优先、多条件规则匹配 | Gateway 使用可信规则判断操作资格 | [policy/engine.py](server/gateway/policy/engine.py) |
+| `AccessRequest`、`PolicyRule`、`PolicyDecision` | 沿用请求和策略模型，将操作集合从 `read/list/export` 改为 `read/send/delete` | [policy/models.py](server/gateway/policy/models.py) |
+| 授权决定绑定原请求并具有有效期 | 为工具调用的参数绑定与确认有效期提供设计基础；工具确认使用独立的 `Approval` 记录 | [gateway/service.py](server/gateway/service.py) |
+| `PolicyEnforcer` 作为执行边界并记录审计 | Gateway 统一控制实际执行，新增用户确认、一次性消费和执行结果审计 | [gateway/service.py](server/gateway/service.py) |
+
+代码来源也有明确边界：`policy/engine.py` 与原项目对应文件保持一致；
+`policy/models.py` 复用了原模型并调整操作集合；`policy/errors.py` 复用了原异常定义。
+原 `PolicyEnforcer` 和 `ProtectedVault` 没有直接作为工具执行器使用，
+DataVault 的加密、数据导入导出也没有迁入本项目。
+HTTP Server、命令行 Client、ToolRegistry、三个工具、JSON Schema 校验、确认状态、
+并发保护、文件沙箱及相关验收测试是围绕本题新增的实现。
+
+### 我的工作与 AI 辅助范围
+
+本项目使用 AI 辅助开发，个人工作和代码实现的分工如下：
+
+| 环节 | 我的贡献 | AI 辅助完成的工作 |
+| --- | --- | --- |
+| 选题与需求范围 | 选择工具安全网关题目，明确先完成 Basic，再推进确认安全进阶 | 讲解任务要求，对照实现检查缺项 |
+| 既有项目复用 | 提供 `Personal_AI` 项目，识别两者的相似性并提出迁移适配方案 | 阅读原代码，迁移策略层并完成工具场景适配 |
+| 阶段推进与交付 | 提出 Level 1、Level 2 的实现和 GitHub 交付要求 | 实现代码、配置环境、生成测试并执行验证，完成 Git 提交与推送 |
+| 贡献说明 | 根据验收反馈，要求明确说明原项目影响及个人与 AI 的分工 | 整理架构对应关系、代码来源和文档 |
+
+本项目的代码迁移、新增代码、测试代码和测试执行由 AI 完成。
+我的贡献体现在提供既有项目基础、识别可复用方案、确定任务范围并组织分阶段交付。
+文档中的架构对应关系与文件来源用于说明这些贡献，不将 AI 生成的代码表述为个人手写实现，
+也不把自动化测试结果表述为个人独立完成的安全验证。
 
 ## 启动
 
