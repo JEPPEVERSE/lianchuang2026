@@ -37,6 +37,7 @@ def retrieve(store, question: str, top_k=8, max_chars=12000):
     query_name = normalized(question)
     seeds = {alias["point_id"] for alias in aliases
              if alias["normalized"] and alias["normalized"] in query_name}
+    query_points = set(seeds)
     links = store.rows("SELECT * FROM point_chunks")
     chunk_points = {}
     for link in links:
@@ -56,7 +57,7 @@ def retrieve(store, question: str, top_k=8, max_chars=12000):
             score += 2.0
         if score > 0:
             reasons = (["alias_match"] if anchored else []) + (["lexical"] if tf.keys() & query else [])
-            candidates[chunk["id"]] = {**chunk, "score": round(score, 6), "retrieval_reason": reasons}
+            candidates[chunk["id"]] = {**chunk, "score": round(score, 6), "scores":{"bm25":round(score,6),"dense":None,"ppr":None,"rrf":None}, "retrieval_reason": reasons}
     ranked = sorted(candidates.values(), key=lambda c: (-c["score"], c["id"]))
     # Seed expansion using actual query matches, not every weak lexical candidate.
     for chunk in ranked[:3]:
@@ -70,7 +71,7 @@ def retrieve(store, question: str, top_k=8, max_chars=12000):
     expansions = []
     for chunk in chunks:
         if chunk["id"] not in candidates and chunk_points.get(chunk["id"], set()) & expanded:
-            expansions.append({**chunk, "score": 0.0, "retrieval_reason": ["graph_expansion"]})
+            expansions.append({**chunk, "score": 0.0, "scores":{"bm25":0.0,"dense":None,"ppr":None,"rrf":None}, "retrieval_reason": ["graph_expansion"]})
     selected, used = [], 0
     # Reserve up to two slots for graph evidence if direct matches fill the list.
     direct_limit = max(1, top_k - min(2, len(expansions)))
@@ -82,7 +83,9 @@ def retrieve(store, question: str, top_k=8, max_chars=12000):
         used += len(chunk["text"])
         if len(selected) == top_k:
             break
-    return {"id": "retrieval_" + uuid.uuid4().hex, "query": question,
-            "point_ids": sorted(seeds), "expanded_point_ids": sorted(expanded),
+    return {"schema_version":2,"query_point_ids":sorted(query_points),
+            "evidence_point_ids":sorted({p for c in selected for p in chunk_points.get(c["id"],set())}),
+            "id": "retrieval_" + uuid.uuid4().hex, "query": question,
+            "point_ids": sorted(seeds), "expanded_point_ids": sorted(expanded - seeds),
             "chunks": selected, "context_chars": used, "max_chars": max_chars,
             "method": "lexical_bm25_alias_one_hop"}
