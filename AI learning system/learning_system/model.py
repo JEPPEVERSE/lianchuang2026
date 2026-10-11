@@ -29,7 +29,7 @@ def load_env(path: Path = Path(".env")) -> None:
             continue
         key, value = line.split("=", 1)
         key = key.strip()
-        if key.startswith("LLM_") or key == "DEEPSEEK_API_KEY":
+        if key.startswith(("LLM_", "EMBED_", "HF_")) or key == "DEEPSEEK_API_KEY":
             os.environ.setdefault(key, value.strip().strip("\"'"))
 
 
@@ -39,6 +39,7 @@ class ChatModel:
         self.model = model or os.getenv("LLM_MODEL", "deepseek-flash")
         self.api_key = api_key if api_key is not None else (os.getenv("LLM_API_KEY") or os.getenv("DEEPSEEK_API_KEY", ""))
         self.timeout = float(timeout or os.getenv("LLM_TIMEOUT", "90"))
+        self.call_stats = []
         if not self.base_url or not self.model:
             raise ModelError("请配置 LLM_BASE_URL 和 LLM_MODEL（可写入本项目 .env）")
         url = parse.urlsplit(self.base_url)
@@ -53,8 +54,10 @@ class ChatModel:
         message = {"input": payload, "output_schema": schema}
         if correction:
             message["previous_validation_error"] = correction
-        role = "analysis" if "kind" in payload else "qa"
-        default_budget = "8192" if role == "analysis" else "2048"
+        role = "analysis" if "kind" in payload else payload.get("task", "qa")
+        if role not in ("analysis", "qa", "openie", "recognition", "updater", "planner"):
+            role = "qa"
+        default_budget = "8192" if role == "analysis" else ("4096" if role in ("openie", "planner", "updater") else "2048")
         budget = int(os.getenv(f"LLM_{role.upper()}_MAX_TOKENS") or os.getenv("LLM_MAX_TOKENS") or default_budget)
         if budget <= 0:
             raise ModelError("输出 token 预算必须为正整数")
@@ -95,6 +98,7 @@ class ChatModel:
                                "reasoning_tokens": usage.get("completion_tokens_details", {}).get("reasoning_tokens"),
                                "finish_reason": choice.get("finish_reason"), "max_tokens": budget,
                                "thinking": thinking or "provider_default"}
+            self.call_stats.append(dict(self.last_stats))
             if os.getenv("LLM_LOG_STATS", "1") == "1":
                 print("[model] " + json.dumps(self.last_stats, ensure_ascii=False), file=sys.stderr, flush=True)
             if choice.get("finish_reason") == "length":

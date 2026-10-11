@@ -1,3 +1,26 @@
+# AI 学习系统
+
+## Level 3 Web（推荐入口）
+
+已加入 HippoRAG 2 核心检索、持久化学生模型、学习记录和动态学习计划。
+
+```bash
+# 推荐 Python 3.12，首次安装
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+# 沿用已有 .env；新项目从 .env.example 复制并填写密钥
+.venv/bin/python -m learning_system.web
+```
+
+打开 **http://127.0.0.1:8765**，也可双击 `start_web.command` 启动。
+在“资料与检索”分别导入教学资料和题目，再构建索引；之后设置目标、问答、提交反馈与作答。
+每次学习记录先保存，模型失败可点击“检查并规划”重试。首次模型下载与索引构建会较慢，页面显示任务进度。
+默认本地 BGE 中文模型，与 DeepSeek 聊天模型分别配置。若 Hugging Face 不可访问，可在 `.env`
+添加 `HF_ENDPOINT=https://hf-mirror.com`。详细架构、验收步骤与限制见 [Level 3 设计](docs/level3_design.md)。
+旧 CLI 保持 Level 1/2 行为，新的 Web 问答默认使用 HippoRAG，可切换 BM25 或向量检索做对比。
+
+## 原 Level 1/2 使用说明
+
 # AI 学习辅助系统 · Level 1 / Level 2
 
 ## Level 2：真实 Markdown、图检索与引用问答
