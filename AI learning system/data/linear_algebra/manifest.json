@@ -1,0 +1,222 @@
+{
+  "subject": "线性代数",
+  "version": 1,
+  "authorship": "原创教学与模拟练习资料，非官方教材摘录或真实历年真题",
+  "encoding": "UTF-8",
+  "resource_files": 20,
+  "problem_files": 5,
+  "solution_files": 5,
+  "problem_count": 40,
+  "documents": [
+    {
+      "path": "resources/01_矩阵与运算.md",
+      "document_id": "la_resource_01",
+      "kind": "resources",
+      "characters": 1333,
+      "sha256": "a4307e465fb0d884100ec0663b3bb3dcee90504324b20baf3f92675c8236f38c"
+    },
+    {
+      "path": "resources/02_初等变换与消元.md",
+      "document_id": "la_resource_02",
+      "kind": "resources",
+      "characters": 1160,
+      "sha256": "24bafa460b6f0bb44bdafe989b1260e1e6309a0caa74f01cc26eea66cd7906a1"
+    },
+    {
+      "path": "resources/03_行列式.md",
+      "document_id": "la_resource_03",
+      "kind": "resources",
+      "characters": 1215,
+      "sha256": "ad6d5e2cec3007652ebfe472301a04c4e1613306901efb2c8803ddefbd0d3c82"
+    },
+    {
+      "path": "resources/04_矩阵的秩.md",
+      "document_id": "la_resource_04",
+      "kind": "resources",
+      "characters": 1106,
+      "sha256": "0d340b4d79f8f9f21845be6500eaa9f189ee6d30436eb30126e1e0c179b3fdb8"
+    },
+    {
+      "path": "resources/05_线性方程组.md",
+      "document_id": "la_resource_05",
+      "kind": "resources",
+      "characters": 1064,
+      "sha256": "6f21b204a060847a6812071bab7888853abb1bf871800af07818d2b9ab1ddfed"
+    },
+    {
+      "path": "resources/06_逆矩阵与分解.md",
+      "document_id": "la_resource_06",
+      "kind": "resources",
+      "characters": 1203,
+      "sha256": "5f0c3a65cc6bbf48a9b60ef9ff88a0d4ec1b020bb9633e7f2281fc181eb43944"
+    },
+    {
+      "path": "resources/07_向量组与线性相关.md",
+      "document_id": "la_resource_07",
+      "kind": "resources",
+      "characters": 1019,
+      "sha256": "b20c87deb7a19c6dfb46e1db3a4dcfe60ddb801fef1ddbb94675643cf1eec707"
+    },
+    {
+      "path": "resources/08_向量空间与基.md",
+      "document_id": "la_resource_08",
+      "kind": "resources",
+      "characters": 1096,
+      "sha256": "134fb1d75f5a875f5a77ec2b00da852cd6460110c3efbb1b6dea644d14f84946"
+    },
+    {
+      "path": "resources/09_坐标与线性映射.md",
+      "document_id": "la_resource_09",
+      "kind": "resources",
+      "characters": 1085,
+      "sha256": "3be3eebb2c136802c44460461dabddc8fa260e8d2302e779a259a884809b4b60"
+    },
+    {
+      "path": "resources/10_内积与正交.md",
+      "document_id": "la_resource_10",
+      "kind": "resources",
+      "characters": 1160,
+      "sha256": "93065adddb5ba4439088c471765cd9870aaab37a02cbeee5e05155727d516c88"
+    },
+    {
+      "path": "resources/11_投影与最小二乘.md",
+      "document_id": "la_resource_11",
+      "kind": "resources",
+      "characters": 1111,
+      "sha256": "b1ec1bdc2c6433d5828824e1df0fb910ca5c9a8abb4450487e0210939e256608"
+    },
+    {
+      "path": "resources/12_特征值与特征向量.md",
+      "document_id": "la_resource_12",
+      "kind": "resources",
+      "characters": 931,
+      "sha256": "67b3c2ebce53011c0fda8c2c4a3494647c43c9d76dd60b974ede2553f20812a6"
+    },
+    {
+      "path": "resources/13_相似与对角化.md",
+      "document_id": "la_resource_13",
+      "kind": "resources",
+      "characters": 982,
+      "sha256": "c1bd357801368071f144c11420112f578082472652d955bb87eb784f5540b759"
+    },
+    {
+      "path": "resources/14_实对称矩阵与谱定理.md",
+      "document_id": "la_resource_14",
+      "kind": "resources",
+      "characters": 990,
+      "sha256": "b666ffb66003a39d7e777a81822b3aab023f17dd928364722dd83d6869cb80e7"
+    },
+    {
+      "path": "resources/15_二次型与正定性.md",
+      "document_id": "la_resource_15",
+      "kind": "resources",
+      "characters": 1048,
+      "sha256": "64e3ebef7c43d579f6c2313d141170f049e91754be641d20a972c31f0625497d"
+    },
+    {
+      "path": "resources/16_奇异值分解概览.md",
+      "document_id": "la_resource_16",
+      "kind": "resources",
+      "characters": 1097,
+      "sha256": "2edd15bbc5bf937e1b5556ac8017e22f9dda909408cb3f90fcc37bf8021a326a"
+    },
+    {
+      "path": "resources/17_核心等价条件与跨章节联系.md",
+      "document_id": "la_resource_17",
+      "kind": "resources",
+      "characters": 1142,
+      "sha256": "876cf2b8dbb79e5f8637f0330e2daa2fa68f40c656181086ed4ad1c608027b5b"
+    },
+    {
+      "path": "resources/18_易错命题与反例.md",
+      "document_id": "la_resource_18",
+      "kind": "resources",
+      "characters": 1040,
+      "sha256": "8efd0b3cf983b9fe32cbcc6c8986e090c123aad1396eaa44d94c0c52d9eb7f93"
+    },
+    {
+      "path": "resources/19_参数矩阵与分类讨论.md",
+      "document_id": "la_resource_19",
+      "kind": "resources",
+      "characters": 1005,
+      "sha256": "6b4a5ef890192895b530eb83cbeaaa7753d102032475d49c91d267df9c99f2a0"
+    },
+    {
+      "path": "resources/20_计算检查与证明方法.md",
+      "document_id": "la_resource_20",
+      "kind": "resources",
+      "characters": 1016,
+      "sha256": "853b2c5beb065668d0c0e29cd88e12dc1e6c0f7aa52d876be869bfbe94f97f59"
+    },
+    {
+      "path": "problems/01_矩阵与方程组练习.md",
+      "document_id": "la_problem_set_01",
+      "kind": "problems",
+      "characters": 870,
+      "sha256": "b4cbece7666cd7df08b04f2a567783c172519667dd36009eb87835a334002921"
+    },
+    {
+      "path": "problems/02_向量空间与正交练习.md",
+      "document_id": "la_problem_set_02",
+      "kind": "problems",
+      "characters": 879,
+      "sha256": "aa607ec634bb816e293362882bb0e3afb901f5249fce90b5aaf5186141f2af8f"
+    },
+    {
+      "path": "problems/03_特征值与二次型练习.md",
+      "document_id": "la_problem_set_03",
+      "kind": "problems",
+      "characters": 824,
+      "sha256": "c245757f16b1a6d6d05a483bac0885a3060d75e4fda9c312ad2bf95f077029a8"
+    },
+    {
+      "path": "problems/04_综合证明与反例练习.md",
+      "document_id": "la_problem_set_04",
+      "kind": "problems",
+      "characters": 826,
+      "sha256": "a21e10afe25353985779ee7d73774b3b10ee945e7c2b55535856b26b4dc98fda"
+    },
+    {
+      "path": "problems/05_参数与计算校验练习.md",
+      "document_id": "la_problem_set_05",
+      "kind": "problems",
+      "characters": 857,
+      "sha256": "5ba0a633b0543f203c46e4c5a5eaa95bf6f3355905c79c479a60d7090377483a"
+    },
+    {
+      "path": "solutions/01_矩阵与方程组解析.md",
+      "document_id": "la_problem_set_01_solutions",
+      "kind": "solutions",
+      "characters": 670,
+      "sha256": "d623819da28aed0173de6aaaaae1680c03f840a12777242ef14cccebcd269db8"
+    },
+    {
+      "path": "solutions/02_向量空间与正交解析.md",
+      "document_id": "la_problem_set_02_solutions",
+      "kind": "solutions",
+      "characters": 562,
+      "sha256": "8fda660be5bfaab36086728205351df3a8b7fa2df9bcfcce512d980229513de7"
+    },
+    {
+      "path": "solutions/03_特征值与二次型解析.md",
+      "document_id": "la_problem_set_03_solutions",
+      "kind": "solutions",
+      "characters": 616,
+      "sha256": "5200dace0bccc8b552ce273a21fece4582dbbcaf57ba0b987fb8d2d82b43634e"
+    },
+    {
+      "path": "solutions/04_综合证明与反例解析.md",
+      "document_id": "la_problem_set_04_solutions",
+      "kind": "solutions",
+      "characters": 713,
+      "sha256": "57dbb96cced2c000c705b67860537b5a67ec5e80244115e0a3002ed0f8c7266b"
+    },
+    {
+      "path": "solutions/05_参数与计算校验解析.md",
+      "document_id": "la_problem_set_05_solutions",
+      "kind": "solutions",
+      "characters": 666,
+      "sha256": "f59025db516bcd1996293e7ac524c77a990cba41457d5c414fa6a186d25d9da1"
+    }
+  ]
+}
