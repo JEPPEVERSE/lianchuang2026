@@ -3,6 +3,9 @@
 把 `Personal_AI/PolicyLayer` 适配为任务书“先别执行！——Agent 工具调用安全网关”。
 固定 JSON 模拟 Agent；命令行 Client 与 HTTP Gateway 分开运行。无需真实大模型、MCP 或邮件服务。
 
+已完成 Basic（Level 1）与确认安全进阶（Level 2）。[Level 2 验收与演示](docs/level2.md)
+说明参数绑定、并发确认、过期、多用户和审计行为。
+
 ## 启动
 
 Python 3.11+。本机已经创建 `.venv` 并安装依赖，可以直接运行下面的启动命令。
@@ -58,6 +61,8 @@ server/tools/registry.py      三个工具、可信 Schema、目录沙箱
 sandbox/notes/                todo.md、draft.txt
 sandbox/outbox/               模拟邮件文件
 tests/                        策略流程、沙箱、并发和 HTTP/Client 集成测试
+docs/level2.md                 Level 2 设计与手动验收步骤
+users.example.json            演示用多用户配置
 runtime/audit.jsonl           运行后生成的审计日志
 ```
 
@@ -110,14 +115,19 @@ runtime/audit.jsonl           运行后生成的审计日志
 
 - 三个工具、两个接口、三种决定、Client 确认交互及三个指定演示场景已实现。
 - 确认绑定 `approval_id/call_id/user_id/tool_name/argument_hash/expires_at/used`。
-  摘要覆盖规范化后的完整参数；还核对原工具调用的摘要。默认确认有效期 300 秒。
+  参数保存为不可变 JSON 快照，读取时返回独立副本。摘要覆盖规范化后的完整参数；
+  还核对原工具调用与确认 ID。默认确认有效期 300 秒，可用 `--approval-ttl` 修改。
 - 过期、重复确认、换用户、修改参数/工具，以及拒绝后的确认均被拒绝。
+  已过期或资源校验失败的确认进入失效终态，重复提交原调用也不会返回过时的 pending。
+- 用户确认后、工具执行前，重新检查服务端策略和资源范围。
 - 单进程锁将确认消费和执行串行化；同一确认的并发请求最多执行一次。
 - 同一 `call_id` 绑定用户与完整调用；相同请求重放返回缓存，变更请求被拒绝。
 - 路径禁止绝对路径、`..` 和符号链接；文件访问使用目录描述符与 `O_NOFOLLOW`，
   执行时重新检查，防止把已确认路径换成指向沙箱外的链接。
 - 审计 JSONL 包含时间、用户、调用、工具、决定、确认 ID、用户选择和执行结果。
-  执行前记录开始事件，执行后记录结果；审计不可写时不会伪报成功。
+  执行前记录开始事件，执行后记录结果，每次写入 flush + fsync。
+  未通过鉴权、JSON 解析或路由检查的 POST 请求也记录拒绝；日志不记录 Client 凭据。
+  无法解析的请求没有可可信提取的调用 ID，相关字段为 null。审计不可写时不会伪报成功。
 - MCP 与恶意网页注入演示尚未实现。
 
 调用和确认保存在内存里，服务重启后失效；审计日志和模拟邮件文件保存在磁盘上。
@@ -129,6 +139,12 @@ runtime/audit.jsonl           运行后生成的审计日志
 
 ```bash
 .venv/bin/python -m unittest discover -s tests -v
+```
+
+当前共 49 项测试；只跑 Level 2 的 22 项验收：
+
+```bash
+.venv/bin/python -m unittest discover -s tests -p 'test_level2.py' -v
 ```
 
 测试使用临时沙箱，不修改自带的测试文件。包含只读执行、确认前无副作用、确认后执行一次、
