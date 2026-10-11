@@ -49,7 +49,7 @@ class Level3Tests(unittest.TestCase):
     def record(self,kind='confused',**kwargs):
         return submit_record(self.store,self.sid,{'kind':kind,'point_ids':[self.pid],'content':'分不清秩与行数',**kwargs})
     def update(self,rid,basis='self_report',confidence=.5):
-        out={'updates':[{'point_id':self.pid,'mastery':.25,'confidence':confidence,'basis':basis,'weakness':'概念不清','evidence_ids':[rid],'reason':'用户报告困惑'}]}
+        out={'updates':[{'point_id':self.pid,'mastery':.25,'confidence':confidence,'basis':basis,'weakness':'概念不清','evidence_ids':[rid],'reason':'用户报告困惑','performance_status':'unknown','misconceptions':[]}], 'deferred_points':[]}
         return QueueModel([out,out])
     def test_ppr_dangling_probability(self):
         scores,_=ppr(3,[[0,1,1.,'relation']],{0:1,2:.2})

@@ -98,4 +98,4 @@ def ingest_file(store, model, path: str | Path, kind: str):
                    "chunks": [chunk.to_dict() for chunk in batch]}
         analyses.append(structured(model, ANALYSIS_PROMPT, payload, ANALYSIS_SCHEMA,
                                    lambda result: check_analysis(result, batch, kind, known)))
-    return store.publish(path, kind, content, chunks, analyses)
+    return {**store.publish(path, kind, content, chunks, analyses), 'schema_version':2}

@@ -44,7 +44,7 @@ def ask(store, model, question: str, top_k=8, max_chars=12000, retriever=None, c
         answer = structured(model, QA_PROMPT, {"question": question, "retrieval": retrieval, "teaching_context": context or {}},
                             ANSWER_SCHEMA, lambda result: check_answer(result, retrieval))
     sources = {chunk["id"]: chunk for chunk in retrieval["chunks"]}
-    answer = {**answer, "citations": [
+    answer = {**answer, "schema_version":2, "citations": [
         {**citation, "path": sources[citation["chunk_id"]]["path"],
          "document_id": sources[citation["chunk_id"]]["document_id"],
          "title": sources[citation["chunk_id"]]["title"],

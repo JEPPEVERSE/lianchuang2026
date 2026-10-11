@@ -14,8 +14,9 @@ from .analysis import ingest_file
 from .embedding import LocalEncoder
 from .hippo import HippoRetriever, build_index
 from .learning import (create_session, get_session, records, submit_record, update_student,
-                       plan_learning, complete_action, change_goal, close_session)
-from .level3_store import initialize, index_status
+                       plan_learning, complete_action, change_goal, close_session, save_session)
+from .level3_store import initialize, index_status, active_learner
+from .artifacts import student_model
 from .model import ChatModel, load_env
 from .qa import ask
 from .store import Store
@@ -146,7 +147,7 @@ class Application:
         if command == 'index':
             return build_index(store, self.chat(), self.encoder or LocalEncoder(), progress)
         if command == 'create_session':
-            session = create_session(store, p.get('goal'), 'local')
+            session = create_session(store, p.get('goal'), active_learner(store))
             # Creation persists before planning; failure can be retried in the UI.
             return self.reconcile(store, session['id'], progress, True)
         if command == 'search':
@@ -162,8 +163,13 @@ class Application:
                          retriever=lambda q, k, m: self.search(store, q, k, m, p.get('mode', 'hippo')),
                          context={'student_model': session['student_model'], 'teaching_state': session['teaching_state']})
             retrieval = json.loads(store.rows('SELECT retrieval_json FROM qa_records WHERE id=?', (result['id'],))[0]['retrieval_json'])
-            if retrieval['point_ids']:
-                submit_record(store, sid, {'kind': 'question', 'point_ids': retrieval['point_ids'][:20],
+            with store.transaction():
+                store.connection.execute('INSERT OR IGNORE INTO qa_sessions VALUES (?,?)',(result['id'],sid))
+            if not retrieval.get('query_point_ids'):
+                state=dict(session['teaching_state']);state['current_question']=p['question'];state['turns_since_plan']+=1
+                with store.transaction():save_session(store,session,state)
+            if retrieval.get('query_point_ids'):
+                submit_record(store, sid, {'kind': 'question', 'point_ids': retrieval['query_point_ids'][:20],
                                            'content': p['question'], 'qa_id': result['id']})
             try:
                 state = self.reconcile(store, sid, progress)
@@ -198,14 +204,26 @@ class Application:
 
     def snapshot(self):
         with Store(self.database) as store:
-            sessions = store.rows('SELECT id,closed FROM sessions ORDER BY rowid DESC LIMIT 20')
+            learner_id=active_learner(store)
+            sessions = store.rows('SELECT id,closed FROM sessions WHERE learner_id=? ORDER BY rowid DESC LIMIT 20',(learner_id,))
             current = next((s for s in sessions if not s['closed']), sessions[0] if sessions else None)
-            return {'index': index_status(store), 'graph': store.graph(), 'history': store.history(30),
+            learner=store.rows('SELECT model FROM learners WHERE id=?',(learner_id,))
+            history=store.history(30)
+            if current:
+                qa_ids={r['qa_id'] for r in store.rows('SELECT qa_id FROM qa_sessions WHERE session_id=?',(current['id'],))}
+                qa_ids.update(json.loads(r['payload']).get('qa_id') for r in store.rows('SELECT payload FROM learning_records WHERE session_id=?',(current['id'],)))
+                history=[h for h in history if h['id'] in qa_ids]
+            else:history=[]
+            return {'schema_version':2,'learner_id':learner_id,
+                    'student_model':student_model(json.loads(learner[0]['model']) if learner else {'points':{}}),
+                    'index': index_status(store), 'graph': store.graph(), 'history':history,
                     'session': get_session(store, current['id']) if current else None,
                     'records': records(store, current['id']) if current else [],
                     'decisions': [{**d, 'output_json': json.loads(d['output_json'])} for d in store.rows(
-                        'SELECT id,created_at,role,reason,output_json FROM learning_decisions ORDER BY id DESC LIMIT 20')],
+                        'SELECT id,created_at,role,reason,output_json FROM learning_decisions WHERE session_id=? ORDER BY id DESC LIMIT 20',
+                        (current['id'],))] if current else [],
                     'sessions': sessions}
+
 
 
 def make_handler(app):

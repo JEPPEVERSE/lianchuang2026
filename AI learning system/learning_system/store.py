@@ -198,14 +198,14 @@ class Store:
 
     def record_qa(self, question, retrieval, answer):
         qid = "qa_" + uuid.uuid4().hex
-        state = {"question_id": qid, "question": question, "answer_status": answer["status"],
+        state = {"schema_version":2,"question_id": qid, "question": question, "answer_status": answer["status"],
                  "retrieval_result_id": retrieval["id"], "answer_record_id": qid}
         with self.transaction():
             self.connection.execute("INSERT INTO qa_records VALUES (?,?,?,?,?,?)", (
                 qid, datetime.now(timezone.utc).isoformat(), question,
                 json.dumps(retrieval, ensure_ascii=False), json.dumps(answer, ensure_ascii=False),
                 json.dumps(state, ensure_ascii=False)))
-        return {"id": qid, **answer, "state": state}
+        return {"schema_version":2,"id": qid, **answer, "state": state}
 
     def history(self, limit=20):
         return [{"id": r["id"], "created_at": r["created_at"], "question": r["question"],

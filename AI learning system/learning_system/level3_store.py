@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from .markdown import digest
 
 SCHEMA = '''
+CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS openie_cache (cache_key TEXT PRIMARY KEY, data TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS vector_cache (cache_key TEXT PRIMARY KEY, data TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS hippo_indexes (id TEXT PRIMARY KEY, created_at TEXT NOT NULL,
@@ -15,6 +16,7 @@ CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, learner_id TEXT NOT NU
  version INTEGER NOT NULL, closed INTEGER NOT NULL, state TEXT NOT NULL, plan TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS learning_records (id TEXT PRIMARY KEY, session_id TEXT NOT NULL REFERENCES sessions(id),
  created_at TEXT NOT NULL, payload TEXT NOT NULL, processed INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS qa_sessions (qa_id TEXT PRIMARY KEY REFERENCES qa_records(id), session_id TEXT NOT NULL REFERENCES sessions(id));
 CREATE TABLE IF NOT EXISTS learning_decisions (id INTEGER PRIMARY KEY AUTOINCREMENT,
  session_id TEXT NOT NULL, created_at TEXT NOT NULL, role TEXT NOT NULL, reason TEXT NOT NULL,
  input_json TEXT NOT NULL, output_json TEXT NOT NULL);
@@ -24,6 +26,32 @@ CREATE TABLE IF NOT EXISTS learning_decisions (id INTEGER PRIMARY KEY AUTOINCREM
 def initialize(store):
     store.connection.executescript(SCHEMA)
     store.connection.commit()
+    migrate_artifacts(store)
+
+
+def migrate_artifacts(store):
+    from .artifacts import student_model, session_artifacts, stamp
+    if store.rows("SELECT value FROM app_settings WHERE key='artifacts_version' AND value='2'"):
+        return
+    with store.transaction():
+        for row in store.rows('SELECT * FROM learners'):
+            store.connection.execute('UPDATE learners SET model=?,version=version+1 WHERE id=?',
+                                     (dumps(student_model(json.loads(row['model']))), row['id']))
+        for row in store.rows('SELECT * FROM sessions'):
+            state, plan = session_artifacts(row['id'], json.loads(row['state']), json.loads(row['plan']))
+            store.connection.execute('UPDATE sessions SET state=?,plan=?,version=version+1 WHERE id=?', (dumps(state),dumps(plan),row['id']))
+        for row in store.rows('SELECT r.*,s.learner_id FROM learning_records r JOIN sessions s ON s.id=r.session_id'):
+            payload = stamp(json.loads(row['payload']))
+            payload.setdefault('origin', 'simulated' if row['learner_id']=='demo-simulated' else 'unknown')
+            payload.setdefault('assistance', 'unknown')
+            payload.setdefault('attempt_no', None)
+            store.connection.execute('UPDATE learning_records SET payload=? WHERE id=?',(dumps(payload),row['id']))
+        store.connection.execute("INSERT OR REPLACE INTO app_settings VALUES ('artifacts_version','2')")
+
+
+def active_learner(store):
+    rows = store.rows("SELECT value FROM app_settings WHERE key='active_learner'")
+    return rows[0]['value'] if rows else 'local'
 
 
 def now():

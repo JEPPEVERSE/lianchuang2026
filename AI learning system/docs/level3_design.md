@@ -117,7 +117,39 @@ PPR 迭代 21 次、保留 7 条三元组；困惑后掌握估计 0.15（self_re
 正交投影和特征值仅有自述反馈，最终掌握值仍为未知；参数方程组保留为薄弱项。
 报告 `runtime/demo_simulation.json` 保存五阶段完整学生状态和计划快照，
 备份 `runtime/before_demo_simulation.sqlite3` 保留模拟前数据，`runtime/demo_ready.sqlite3` 保存可演示终态。
-当前 Web 默认显示最新开放的模拟session，并展示模拟标记。结束该session后刷新，会回到仍开放的真实学习session。
+该模拟用于历史验证，现已按用户要求归档清理；当前使用 V2 空白档案。
 可复用脚本：从项目根目录运行 `PYTHONPATH=. .venv/bin/python scripts/seed_demo.py`，
 重跑会跳过已保存记录和已完成阶段，不直接修改掌握值。需要已配置模型服务和现有题库。
 演示建议：先看学习档案，再看计划与历史决策，最后继续提交 LA-Q006 参数分类的正确作答，观察状态和计划变化。
+
+## 工件 V2 与空白档案
+
+工件升级至 schema_version=2。artifacts.py 提供兼容读取和动作生命周期管理，
+level3_store.py 使用 app_settings 记录幂等迁移版本与当前学生。旧记录来源无法确认时记为 unknown，
+旧掌握摘要保留，但不凭空生成作答表现、独立完成记录或已解决误解。
+学习记录增加 origin、assistance、attempt_no；origin 由调用端内部确定，Web 用户不能通过输入覆盖。
+模拟脚本明确传入 simulated。assistance 是用户声明而非程序验证的独立作答证明。
+student_model 将 self_report 与 performance 分开，保留原 mastery/basis/confidence 摘要；
+自述不能覆盖已有作答估计。performance 明确标记 model 评估来源，正确性仍需人工核对。
+misconceptions 保存活跃/已解决状态与两类证据；解决必须有匹配的纠正作答。
+evidence_summary 按数据库记录统计次数、不同题目数和声明独立次数。
+updater 对每个本轮知识点必须更新或明确 deferred_points；延期原因持久化并进入审计，
+记录被处理不等于掌握被确认。新证据到达后可以重新评估延期知识点。
+
+计划有 goal_id，动作有 goal_id、completion_criteria、completion_record_ids、evaluation_status。
+相同目标/动作类型/知识点/资料与题目集合的待执行动作重规划后保留ID；被替换动作归档。
+改目标会生成新goal_id，旧动作归档，不混入新目标。完成动作只表示执行完成，答错仍可完成练习；
+表现正确与否由 evaluation_status 单独表示。目标完成采用证据检查，不使用分数阈值自动宣告完成。
+teaching_state.current_issue 绑定知识点、问题、诊断与记录；轮次和 needs_plan 仍是程序调度字段。
+
+检索增加 query_point_ids（名称/别名明确命中）、evidence_point_ids（返回原文关联）、
+真正扩展的 expanded_point_ids 和逐项 scores。无法明确识别问题知识点时允许空列表，
+不会把所有相关知识点自动当作提问主题。该问题仍通过 qa_sessions 归属当前session并保存问答。
+旧向量和事实索引继续复用，无需重建。
+
+按用户要求，原 demo-simulated 的38条记录、11条决策和3条独占问答已从正式库移除，
+相关演示报告和恢复快照移到 runtime/archive/。操作前完整备份也在该目录。
+当前选中新建的空白学生，没有session、学习记录或掌握估计；原local真实历史保留。
+详见 runtime/profile_reset.json。后续 Web 创建session会使用这个新学生。
+脚本 scripts/reset_learning_profile.py 会备份、清理指定演示学生并选择新的空白档案。
+真实 V2 模型验证在独立 /tmp 数据库运行，没有向正式档案添加测试记录。

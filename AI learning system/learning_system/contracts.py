@@ -48,8 +48,9 @@ def validate(value, schema, path="output"):
         raise ValueError(f"{path}: unsupported value")
     if isinstance(value, dict):
         properties = schema.get("properties", {})
-        if any(key not in value for key in schema.get("required", [])):
-            raise ValueError(f"{path}: missing required fields")
+        missing = [key for key in schema.get("required", []) if key not in value]
+        if missing:
+            raise ValueError(f"{path}: missing required fields {missing}")
         if schema.get("additionalProperties") is False and set(value) - set(properties):
             raise ValueError(f"{path}: unknown fields {sorted(set(value) - set(properties))}")
         for key, child in properties.items():

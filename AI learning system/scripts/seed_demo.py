@@ -107,7 +107,7 @@ def main():
      session=get_session(store,sid)
      result=ask(store,model,content,retriever=search,context={'student_model':session['student_model'],'teaching_state':session['teaching_state']})
      payload['qa_id']=result['id'];print('QA',result['status'],flush=True)
-    submit_record(store,sid,payload)
+    submit_record(store,sid,payload,origin="simulated")
    while records(store,sid,1,True):update_student(store,model,sid)
    session=plan_learning(store,model,sid,search,'demo_'+str(number))
    report['stages'].append({'number':number,'title':title,'record_count':len(items),'session':session})

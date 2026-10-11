@@ -232,14 +232,17 @@ class HippoRetriever:
                 continue
             selected_chunks.append({**chunk, 'score': fused[i], 'dense_score': passage_scores[i],
                                     'ppr_score': ppr_scores[offset+i] if ppr_scores else None,
+                                    'scores':{'dense':passage_scores[i],'ppr':ppr_scores[offset+i] if ppr_scores else None,
+                                              'rrf':fused[i] if mode=='hippo' else None,'bm25':None},
                                     'retrieval_reason': [method]})
             used += len(chunk['text'])
             if len(selected_chunks) >= top_k:
                 break
         cids = {c['id'] for c in selected_chunks}
         points = sorted({r['point_id'] for r in store.rows('SELECT * FROM point_chunks') if r['chunk_id'] in cids})
-        return {'id': 'retrieval_' + uuid.uuid4().hex, 'query': question, 'chunks': selected_chunks,
-                'point_ids': points, 'expanded_point_ids': points, 'context_chars': used, 'max_chars': max_chars,
+        query_points=sorted({a['point_id'] for a in store.rows('SELECT * FROM aliases') if a['normalized'] and a['normalized'] in normalized(question)})
+        return {'schema_version':2,'query_point_ids':query_points,'evidence_point_ids':points,'id': 'retrieval_' + uuid.uuid4().hex, 'query': question, 'chunks': selected_chunks,
+                'point_ids': points, 'expanded_point_ids': [], 'context_chars': used, 'max_chars': max_chars,
                 'method': method, 'index_version': row['id'], 'matched_triple_ids': [t['id'] for t in candidates],
                 'selected_triple_ids': selected_ids,
                 'seed_entity_ids': [entities[i]['id'] for i in seeds if i < offset],
