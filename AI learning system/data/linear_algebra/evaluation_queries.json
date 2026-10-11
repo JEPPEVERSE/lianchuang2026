@@ -1,0 +1,105 @@
+[
+  {
+    "id": "E01",
+    "question": "为什么方阵可逆时 Ax=b 对任何 b 都有唯一解？",
+    "expected_resource_files": [
+      "04_矩阵的秩.md",
+      "05_线性方程组.md",
+      "06_逆矩阵与分解.md"
+    ],
+    "expected_status": "supported"
+  },
+  {
+    "id": "E02",
+    "question": "两两线性无关能否保证三个向量整体线性无关？",
+    "expected_resource_files": [
+      "07_向量组与线性相关.md",
+      "18_易错命题与反例.md"
+    ],
+    "expected_status": "supported"
+  },
+  {
+    "id": "E03",
+    "question": "为什么满列秩能保证最小二乘系数唯一？",
+    "expected_resource_files": [
+      "04_矩阵的秩.md",
+      "11_投影与最小二乘.md",
+      "15_二次型与正定性.md"
+    ],
+    "expected_status": "supported"
+  },
+  {
+    "id": "E04",
+    "question": "追问：A 的列相关时，投影唯一与系数不唯一是否矛盾？",
+    "expected_resource_files": [
+      "08_向量空间与基.md",
+      "11_投影与最小二乘.md"
+    ],
+    "expected_status": "supported"
+  },
+  {
+    "id": "E05",
+    "question": "可逆矩阵一定可以对角化吗？",
+    "expected_resource_files": [
+      "06_逆矩阵与分解.md",
+      "13_相似与对角化.md"
+    ],
+    "expected_status": "supported"
+  },
+  {
+    "id": "E06",
+    "question": "同一个特征值的特征向量也一定正交吗？",
+    "expected_resource_files": [
+      "10_内积与正交.md",
+      "14_实对称矩阵与谱定理.md"
+    ],
+    "expected_status": "supported"
+  },
+  {
+    "id": "E07",
+    "question": "顺序主子式都大于等于零就半正定吗？",
+    "expected_resource_files": [
+      "15_二次型与正定性.md",
+      "18_易错命题与反例.md"
+    ],
+    "expected_status": "supported"
+  },
+  {
+    "id": "E08",
+    "question": "矩阵秩和 rank 是不是同一个概念？",
+    "expected_resource_files": [
+      "04_矩阵的秩.md"
+    ],
+    "expected_status": "supported"
+  },
+  {
+    "id": "E09",
+    "question": "给出 QR 中 Householder 反射的逐步实现和浮点误差分析。",
+    "expected_resource_files": [
+      "11_投影与最小二乘.md"
+    ],
+    "expected_status": "insufficient_for_algorithm"
+  },
+  {
+    "id": "E10",
+    "question": "给出随机化 SVD 的完整 Python 实现和参数误差界。",
+    "expected_resource_files": [
+      "16_奇异值分解概览.md"
+    ],
+    "expected_status": "insufficient_for_algorithm"
+  },
+  {
+    "id": "E11",
+    "question": "根据资料说明 Jordan 标准形的一般构造步骤。",
+    "expected_resource_files": [
+      "17_核心等价条件与跨章节联系.md"
+    ],
+    "expected_status": "insufficient"
+  },
+  {
+    "id": "E12",
+    "question": "给出张量 CP 分解唯一性的判据与证明。",
+    "expected_resource_files": [],
+    "expected_status": "insufficient"
+  }
+]

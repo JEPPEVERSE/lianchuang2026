@@ -1,4 +1,79 @@
-# AI 学习辅助系统 · Level 1
+# AI 学习辅助系统 · Level 1 / Level 2
+
+## Level 2：真实 Markdown、图检索与引用问答
+
+Python 3.9+，仅使用标准库。SQLite 保存课程原文、知识网络、题目/题型和问答快照。
+两次模型角色分别负责分析与回答，默认使用 DeepSeek；检索使用词法 BM25、别名与一跳图扩展。
+
+### 配置模型
+
+在本项目目录使用 `.env`，如尚不存在可从 `.env.example` 复制：
+
+```bash
+cd "AI learning system"
+cp .env.example .env
+```
+
+仅在新配置时执行复制，避免覆盖已有密钥。编辑 `.env`：
+
+```dotenv
+LLM_BASE_URL=https://api.deepseek.com
+LLM_MODEL=deepseek-flash
+LLM_API_KEY=填写你的密钥
+```
+
+也接受 `DEEPSEEK_API_KEY`。环境变量优先于 .env。密钥不保存到数据库，.env 已被 Git 忽略。
+当前模型名依据 [DeepSeek 官方文档](https://api-docs.deepseek.com/zh-cn/)；
+使用 [JSON Output](https://api-docs.deepseek.com/guides/json_mode/) 并在本地进一步校验字段与引用。
+服务需支持 `/chat/completions`；若其他兼容服务不支持 JSON mode，可设置 `LLM_JSON_MODE=0`，
+仍会要求 JSON 文本并执行本地校验。HTTP 错误仅显示状态码，不输出可能含敏感内容的响应正文。
+
+### 小规模试跑与完整导入
+
+```bash
+python3 -m learning_system ingest data/linear_algebra/resources --kind resource --limit 2
+python3 -m learning_system ingest data/linear_algebra/resources --kind resource
+python3 -m learning_system ingest data/linear_algebra/problems --kind problem
+python3 -m learning_system point "矩阵的秩"
+python3 -m learning_system graph
+python3 -m learning_system plan
+python3 -m learning_system search "为什么满列秩能保证最小二乘系数唯一？"
+python3 -m learning_system ask "为什么满列秩能保证最小二乘系数唯一？"
+python3 -m learning_system ask "给出随机化 SVD 的完整实现及误差界" --json
+python3 -m learning_system history
+```
+
+资料集共 20 份讲义和 40 道模拟题。题型会由模型提取，输入目录必须区分 resource/problem。
+不要导入 solutions/ 或 evaluation_queries.json。
+首次导入会把对应正文发送到配置的模型服务并产生 API 费用；建议先小规模检查结果。
+重复导入同路径、同内容会跳过，不产生分析调用。
+
+默认对 DeepSeek 显式设置 `LLM_THINKING=disabled`，避免默认思考耗尽输出预算。
+分析与问答分别使用 `LLM_ANALYSIS_MAX_TOKENS=8192`、`LLM_QA_MAX_TOKENS=2048`；
+角色配置优先于旧 `LLM_MAX_TOKENS`。`LLM_ANALYSIS_BATCH_CHARS=3000` 控制每批原文长度。
+stderr 的 `[model]` 统计显示耗时、输入/输出 token、思考 token（服务提供时）与停止原因，
+不包含密钥、原文或思考正文。截断时不按相同预算重复请求；合法 JSON 的校验错误仍允许一次纠正。
+
+默认数据库位于 `runtime/learning.sqlite3`，可在命令前后加 `--db 路径` 指定独立数据库。
+ingest 每行输出一份文件的导入结果；其他查询默认输出 JSON，ask 默认输出可读答案与原文引用。
+命令失败返回非零退出码。目录按文件逐份发布；失败文件回滚，之前成功的文件仍保留。
+修改已入库文件会拒绝覆盖；如需重新实验，可指定新的数据库，不必删除原数据。
+
+### 测试与设计说明
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+测试无需 DeepSeek 密钥，使用明确的模拟模型输出；HTTP 集成测试会启动本机临时服务。
+包括重复导入、增量整合、别名归一、来源引用、题型、循环回滚、资料不足和进程重启恢复。
+它们验证系统机制；实际模型的语义提取、证据充分性和数学正确性仍需另行评估。
+如运行环境不允许本机监听，可以只运行 test_level2.py 与 test_network.py。
+
+详细工件、成本与边界见 [Level 2 设计说明](docs/level2_design.md)。
+本版本没有 embedding 或 PPR，不是完整 HippoRAG；尚不更新学生掌握度。
+
+## Level 1：模拟分析结果
 
 Python 3.10+，仅使用标准库，不需要安装依赖或配置模型 API。
 
