@@ -20,6 +20,7 @@ function renderChat(){const ids=new Set(snapshot.records.map(r=>r.payload.qa_id)
 function render(){
  renderChat();
  const s=session(),active=s&&!s.closed;$('start-card').hidden=active;$('session-panel').hidden=!active;
+ $('simulation-banner').hidden=!s?.learner_id?.startsWith('demo-');
  if(s){$('goal-text').textContent=s.teaching_state.goal;$('plan-version').textContent='V'+s.learning_plan.version;$('plan-summary').textContent=s.learning_plan.summary;
  const a=clear('actions');if(!s.learning_plan.actions.length)a.append(node('p','当前没有待执行动作，可点击“检查并规划”。','muted'));
  s.learning_plan.actions.forEach(action=>{const div=node('div',undefined,'action '+action.status);const head=node('div');head.append(node('span',labels[action.type],'badge'),node('strong',name(action.point_id)));div.append(head,node('p',action.instruction,'instruction'),node('p',action.reason,'muted'));

@@ -108,3 +108,16 @@ PPR 迭代 21 次、保留 7 条三元组；困惑后掌握估计 0.15（self_re
 一次字段缺失的事实抽取被校验拦截，随后复用缓存重试成功，未绕过验证。
 旧前置图中三条把秩的应用当作秩定义前置的关系经检查反向修正；原数据库备份与变更说明
 位于 runtime/before_prerequisite_review.sqlite3 和 runtime/prerequisite_review.json。
+
+## 模拟演示学生
+
+`demo-simulated` 为独立模拟学生，原 `local` 学生保留。38 条记录明确标注模拟，
+通过真实 DeepSeek 问答、updater 与 planner 运行五阶段闭环，覆盖 9 个知识点，计划更新至 V6。
+不是模型训练或真实用户效果实验；重复同题只能说明当前练习的表现，不能推断泛化能力。
+正交投影和特征值仅有自述反馈，最终掌握值仍为未知；参数方程组保留为薄弱项。
+报告 `runtime/demo_simulation.json` 保存五阶段完整学生状态和计划快照，
+备份 `runtime/before_demo_simulation.sqlite3` 保留模拟前数据，`runtime/demo_ready.sqlite3` 保存可演示终态。
+当前 Web 默认显示最新开放的模拟session，并展示模拟标记。结束该session后刷新，会回到仍开放的真实学习session。
+可复用脚本：从项目根目录运行 `PYTHONPATH=. .venv/bin/python scripts/seed_demo.py`，
+重跑会跳过已保存记录和已完成阶段，不直接修改掌握值。需要已配置模型服务和现有题库。
+演示建议：先看学习档案，再看计划与历史决策，最后继续提交 LA-Q006 参数分类的正确作答，观察状态和计划变化。
