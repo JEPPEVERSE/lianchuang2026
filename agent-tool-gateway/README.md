@@ -1,6 +1,6 @@
 # Agent Tool Gateway
 
-把 `Personal_AI/PolicyLayer` 适配为任务书“先别执行！——Agent 工具调用安全网关”。
+一个用于校验、授权和执行 Agent 工具调用的安全网关，对应任务书“先别执行！——Agent 工具调用安全网关”。
 固定 JSON 模拟 Agent；命令行 Client 与 HTTP Gateway 分开运行。无需真实大模型、MCP 或邮件服务。
 
 已完成 Basic（Level 1）与确认安全进阶（Level 2）。[Level 2 验收与演示](docs/level2.md)
@@ -50,13 +50,13 @@ python3 -m venv .venv
 Agent 在当前项目中只是固定 JSON 的来源，不持有发起确认的能力；若后续接入独立 Agent，
 必须把 Client 凭据保留在可信交互进程中，不能暴露给模型或它的执行环境。
 
-## 结构与原项目适配
+## 项目结构与架构
 
 ```text
 client/                       固定 ToolCall、完整参数展示、用户确认/拒绝
 server/__main__.py            HTTP 接口、Client 凭据、JSON 解析
 server/gateway/service.py     调用去重、校验、策略、确认、执行与审计
-server/gateway/policy/        来自 Personal_AI 的策略层
+server/gateway/policy/        默认拒绝、规则匹配和授权决定
 server/tools/registry.py      三个工具、可信 Schema、目录沙箱
 sandbox/notes/                todo.md、draft.txt
 sandbox/outbox/               模拟邮件文件
@@ -66,11 +66,10 @@ users.example.json            演示用多用户配置
 runtime/audit.jsonl           运行后生成的审计日志
 ```
 
-实际迁移了 `Personal_AI/PolicyLayer/src/personal_ai_policy/` 的 `engine.py`、`models.py`、
-`errors.py`。保留默认拒绝、显式拒绝优先、多条件匹配、请求绑定与有效期的数据模型；
-操作集合适配为 `read/send/delete`。Gateway 把可信工具调用转为 `AccessRequest`，交给原策略引擎评估。
-原 `PolicyEnforcer` 的字段投影适用于数据读取；这里用 `GatewayService` 接替执行边界，
-增加工具校验、三态决策、待确认记录和执行结果审计。DataVault、加密及原项目的虚拟环境和配置均未迁移。
+策略层采用默认拒绝、显式拒绝优先和多条件规则匹配，支持 `read/send/delete` 三种操作。
+Gateway 将经过工具和参数校验的调用转为 `AccessRequest`，交给 `PolicyEngine` 评估。
+`GatewayService` 统一管理三态决策、待确认记录、工具执行和审计，
+`ToolRegistry` 保存可信工具定义、参数 Schema 与确认策略。
 
 当前规则只允许三个已注册的本地工具；工具是否需要确认由服务端注册信息决定，
 不接受 Agent 提交策略。策略允许表示操作具备执行资格，仍须通过该工具的确认要求。
