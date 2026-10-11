@@ -6,6 +6,7 @@ import threading
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
+from dataclasses import replace
 from pathlib import Path
 from unittest.mock import patch
 from urllib.error import HTTPError
@@ -162,9 +163,12 @@ class GatewayTests(GatewayFixture, unittest.TestCase):
             pending = self.email(str(index))
             record = self.gateway._approvals[pending["approval_id"]]
             if field == "arguments":
-                record.arguments["to"] = "attacker@example.com"
+                arguments = record.arguments
+                arguments["to"] = "attacker@example.com"
+                record = replace(record, arguments_json=json.dumps(arguments))
             else:
-                record.tool_name = "read_note"
+                record = replace(record, tool_name="read_note")
+            self.gateway._approvals[pending["approval_id"]] = record
             self.assertEqual("deny", self.decide(pending)["decision"])
         self.assertEqual([], list(self.outbox.iterdir()))
 
@@ -205,8 +209,7 @@ class GatewayTests(GatewayFixture, unittest.TestCase):
         self.assertEqual(1, len(list(self.outbox.iterdir())))
 
 
-class HttpTests(GatewayFixture, unittest.TestCase):
-    # Only HTTP tests below: do not inherit/run the service suite twice.
+class HttpFixture(GatewayFixture):
     def setUp(self):
         super().setUp()
         self.server = make_server(self.gateway, {"test-token": "user:demo", "other-token": "user:other"}, port=0)
@@ -226,6 +229,8 @@ class HttpTests(GatewayFixture, unittest.TestCase):
         with urlopen(request, timeout=5) as response:
             return json.load(response)
 
+
+class HttpTests(HttpFixture, unittest.TestCase):
     def test_http_requires_client_credential(self):
         with self.assertRaises(HTTPError) as exc:
             self.raw_post("/tool-calls", "{}", "bad-token")

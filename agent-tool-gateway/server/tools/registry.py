@@ -58,7 +58,12 @@ class SandboxTools:
 
     @contextmanager
     def parent(self, directory: str, parts: list[str]) -> Iterator[tuple[int, str]]:
-        fd = os.open(self.sandbox / directory, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        # Open the sandbox root first: replacing it with a symlink must not escape.
+        root_fd = os.open(self.sandbox, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        try:
+            fd = os.open(directory, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=root_fd)
+        finally:
+            os.close(root_fd)
         try:
             for part in parts[:-1]:
                 child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
