@@ -1,0 +1,88 @@
+[
+  {
+    "type": "resource",
+    "resource": {
+      "id": "res_basics",
+      "path": "资料/矩阵基础.md"
+    },
+    "points": [
+      {
+        "id": "matrix",
+        "name": "矩阵与矩阵运算"
+      },
+      {
+        "id": "row_operations",
+        "name": "初等行变换"
+      },
+      {
+        "id": "rank",
+        "name": "矩阵的秩"
+      }
+    ],
+    "edges": [
+      {
+        "from": "matrix",
+        "to": "row_operations"
+      },
+      {
+        "from": "row_operations",
+        "to": "rank"
+      }
+    ]
+  },
+  {
+    "type": "resource",
+    "resource": {
+      "id": "res_linear_system",
+      "path": "资料/线性方程组.md"
+    },
+    "points": [
+      {
+        "id": "rank",
+        "name": "矩阵的秩"
+      },
+      {
+        "id": "linear_system",
+        "name": "线性方程组"
+      }
+    ],
+    "edges": [
+      {
+        "from": "rank",
+        "to": "linear_system"
+      }
+    ]
+  },
+  {
+    "type": "problem",
+    "problem": {
+      "id": "q1",
+      "name": "利用秩判断并求解线性方程组",
+      "content": "已知方程组 x+y+z=2，2x+2y+2z=4，x-y+z=0。求系数矩阵与增广矩阵的秩，判断解的情况，并求通解。"
+    },
+    "points": [
+      {
+        "id": "rank",
+        "name": "矩阵的秩"
+      },
+      {
+        "id": "linear_system",
+        "name": "线性方程组"
+      }
+    ]
+  },
+  {
+    "type": "problem",
+    "problem": {
+      "id": "q2",
+      "name": "求矩阵的秩",
+      "content": "利用初等行变换求矩阵 A=[[1,2,3],[2,4,6],[1,1,1]] 的秩。"
+    },
+    "points": [
+      {
+        "id": "rank",
+        "name": "矩阵的秩"
+      }
+    ]
+  }
+]

@@ -1,0 +1,25 @@
+[
+  {
+    "type": "resource",
+    "resource": {
+      "id": "res_inverse",
+      "path": "资料/逆矩阵.md"
+    },
+    "points": [
+      {
+        "id": "rank",
+        "name": "矩阵的秩"
+      },
+      {
+        "id": "inverse",
+        "name": "逆矩阵"
+      }
+    ],
+    "edges": [
+      {
+        "from": "rank",
+        "to": "inverse"
+      }
+    ]
+  }
+]
